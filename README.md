@@ -4,7 +4,7 @@ A standalone Python script for advanced respiratory signal processing and event 
 
 ## Overview
 
-The SS Algorithm processes electrophysiological data (typically EDF files) to:
+The SS Algorithm processes:
 - **List and load EDF files:** Automatically scans a folder for EDF files.
 - **Channel detection:** Searches for respiratory channels using flexible string matching.
 - **Preprocessing:** Includes NaN removal, signal clipping, and normalization.
