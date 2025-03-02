@@ -9,6 +9,12 @@ The scripts provided perform the following key tasks:
 - **ROC, PRC & Calibration Curves:** Compute and plot Receiver Operating Characteristic (ROC) curves, Precision-Recall (PR) curves, and calibration plots to assess the performance of predictive models.
 - **Self-Similarity (SS) Output Analysis:** Examine SS metrics and relate them to apnea indices and CPAP success.
 
+## Download 
+- Go to the BDSP.io website and find the project: Morphological Prediction of CPAP Associated Acute Respiratory Instability (Self Similarity) 
+- Download the following 2 files:
+- `mgh_histogram_bars_03_20_2023_all.zip` (contains all computed histograms, required to recreate the figures from intermediate data)
+- `split_rec_labels.hf5` (contains the respiratory event labels for all PSG recordings used in this publication)
+
 ## Installation
 
 Ensure Python 3 is installed, then install the required dependencies:
