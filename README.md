@@ -72,6 +72,6 @@ Contributions are welcome. Please fork the repository and submit a pull request 
 For questions, suggestions, or licensing inquiries, please contact:
 - **T. Nassi**
 - **E. Oppersma**
-- **M. B. Westover**
+- **M.B. Westover**
 - **R.J. Thomas**
 
