@@ -32,6 +32,38 @@ def load_prepared_data(path, fs=200):
 
     return data
 
+def load_prepared_data_old(file_path:str, get_signals:list=[]):
+    """ 
+    load prepared data format (post March 22, 2023). Currently, all signals are read. 
+    Inputs:
+    file_path: path to prepared .h5 file.
+    """
+    # init DF
+    Xy = pd.DataFrame([])
+    
+    # read file
+    with h5py.File(file_path, 'r') as f:
+        # Loop over each group and dataset within each group and get data
+        group_names = list(f.keys())
+        for group_name in group_names:        
+            group = f[group_name]
+
+            # list all existing datasets
+            dataset_names = list(group.keys())
+            # get all, or take from get_signals
+            get_names = dataset_names if len(get_signals)==0 else [c for c in dataset_names if c in get_signals]
+            for dataset_name in get_names:
+                dataset = group[dataset_name][:]
+                assert dataset.shape[1] == 1, "Only one-dimensional datasets expected"
+                Xy[dataset_name] = dataset.flatten()
+        
+        # save attributes
+        params = {}
+        for attrs in f.attrs.keys():
+            params[attrs] = f.attrs[attrs]
+
+    return Xy, params
+
 ## breathing trace seletion ##
 def cpapOn_select_breathing_trace(signals):
     # take selection    
