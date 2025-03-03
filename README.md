@@ -2,6 +2,12 @@
 
 A standalone Python script for advanced respiratory signal processing and event detection. This repository contains code for processing EDF files, extracting respiratory channels, applying preprocessing steps, and detecting flow reductions (apneas, hypopneas) and self-similarity events in respiratory signals.
 
+## License
+
+This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License - see the [LICENSE](LICENSE) file for details.
+
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
+
 ## Overview
 
 The SS Algorithm processes:
