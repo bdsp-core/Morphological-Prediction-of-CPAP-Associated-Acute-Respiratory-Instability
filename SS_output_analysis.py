@@ -8,7 +8,7 @@ from scipy import stats
 from preprocessing_functions.find_events import find_events
 from hypoxic_burden import compute_hypoxic_burden
 
-save_df_path = './files/'
+save_df_path = './csv_files/'
 hf5data_folder = './'
 
 

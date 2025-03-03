@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import timedelta
 from scipy.integrate import simpson as simps
 
-## Wolfgang Functions ##
 
 def add_spo2_prior_window_to_list(data, spo2_collection_100s_prior, idx_tmp, fs):
 
@@ -487,7 +486,6 @@ def hypoxia_drops(data, drop_magnitude=3, max_gap=10, fs=10):
     return data, no_hypoxia_short, no_hypoxia_long
 
 
-## Thijs Functions ## 
 
 def compute_avg_spo2(data, hdr):
     spo2 = data.spo2.values
@@ -498,6 +496,7 @@ def compute_avg_spo2(data, hdr):
     hdr['avg. spo2'] = np.mean(spo2)
 
     return data, hdr
+
 
 def compute_hypoxic_burden(data, fs, label_version='4%'):
     

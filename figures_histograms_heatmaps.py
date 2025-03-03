@@ -7,7 +7,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.linear_model import LogisticRegressionCV
 from matplotlib.lines import Line2D
 
-save_df_path = './files/'
+save_df_path = './csv_files/'
 hf5data_folder = './'
 
 

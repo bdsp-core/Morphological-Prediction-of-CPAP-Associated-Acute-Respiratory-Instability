@@ -7,6 +7,7 @@ from scipy.signal import savgol_filter, convolve, find_peaks
 import warnings
 warnings.filterwarnings("ignore")
 
+
 def show_credits():
     # header
     print("\n\n*** Notice: Ownership and Patent Information ***")

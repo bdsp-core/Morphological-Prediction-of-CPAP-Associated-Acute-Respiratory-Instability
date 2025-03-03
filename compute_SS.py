@@ -15,7 +15,7 @@ from .SS_detector.run_SS_detector import run_SS_algorithm
 # loading and saving functions
 def select_split_recordings(all_paths, dataset):
     # read split recordings from .csv
-    split_recs_csv = f'./files/{dataset.upper()}_split_recs.csv'
+    split_recs_csv = f'./csv_files/{dataset.upper()}_split_recs.csv'
     if not os.path.exists(split_recs_csv):
         skip, skip_notSplit, skip_noHour = 0, 0, 0
         split_recs =  pd.DataFrame([], columns=['FileName'])
