@@ -1,7 +1,6 @@
-from scipy.io import loadmat
+import os, glob, ray, h5py
 import numpy as np
 import pandas as pd
-import os, glob, ray, h5py
 from datetime import datetime
 import matplotlib.pyplot as plt
 from itertools import groupby
@@ -423,32 +422,6 @@ def get_peaks_troughs_2(t,trace,mph,mpd):
     troughs = trace[i2].copy(); 
     return tPeaks,peaks,tTroughs,troughs
 
-def load_mgh_matlab_data(data_path, fs):
-    
-    data = loadmat(data_path)
-    channels = [data['hdr'][0][x][0][0] for x in range(len(data['hdr'][0]))]
-    abd_channel_no = channels.index('ABD')
-    chest_channel_no = channels.index('CHEST')
-    trace = data['s'][abd_channel_no,:] + data['s'][chest_channel_no,:]
-    t = np.arange(len(trace))/fs
-    
-    return t, trace
-
-def clip_z_normalize(signal):
-    print(np.percentile(signal,1))
-    print(np.percentile(signal,4))
-    print(np.percentile(signal,96))
-    print(np.percentile(signal,99))
-    signal_clipped = np.clip(signal, np.percentile(signal,5), np.percentile(signal,95))
-    signal = (signal - np.mean(signal_clipped))/np.std(signal_clipped)
-
-    print(np.percentile(signal,1))
-    print(np.percentile(signal,4))
-    print(np.percentile(signal,96))
-    print(np.percentile(signal,99))
-
-    return signal
-
 def detect_central_events(lo, up, fs):
     d = up - lo 
     centr_detected = np.zeros(d.shape)
@@ -479,107 +452,8 @@ def detect_central_events(lo, up, fs):
             centr_hypo_final[int(i-4.5*fs):int(i+4.5*fs)] = 1
           
     return centr_detected_final, centr_hypo_final
-
-def generate_report(trace, centr_detected_final, centr_hypo_final, fs, save=False):
-    
-    state_switches = centr_detected_final[1:] - centr_detected_final[:-1]
-    apnea_start = np.where(state_switches==1)[0]+1
-    apnea_end = np.where(state_switches==-1)[0]+1
-    state_switches = centr_hypo_final[1:] - centr_hypo_final[:-1]
-    hypopnea_start = np.where(state_switches==1)[0]+1
-    hypopnea_end = np.where(state_switches==-1)[0]+1
-    
-    hypopnea_report = pd.DataFrame(columns=['start_sample','end_sample','start_second','end_second','event'])
-    hypopnea_report.start_sample = hypopnea_start
-    hypopnea_report.end_sample = hypopnea_end
-    hypopnea_report.start_second = np.round(hypopnea_start/fs,1)
-    hypopnea_report.end_second = np.round(hypopnea_end/fs,1)
-    hypopnea_report.event  = ['central hypopnea']*hypopnea_report.shape[0]
-    
-    apnea_report = pd.DataFrame(columns=['start_sample','end_sample','start_second','end_second','event'])
-    apnea_report.start_sample = apnea_start
-    apnea_report.end_sample = apnea_end
-    apnea_report.start_second = np.round(apnea_start/fs,1)
-    apnea_report.end_second = np.round(apnea_end/fs,1)
-    apnea_report.event  = ['central apnea']*apnea_report.shape[0]
-    
-    report_events = pd.concat([hypopnea_report,apnea_report],ignore_index=True).sort_values(by='start_sample').reset_index()
-    report_events.drop('index', axis=1,inplace=True)
-    
-    summary_report = pd.DataFrame([],columns=['signal duration (h)', 'detected central apnea events', 'detected central hypopnea events'])
-    summary_report['signal duration (h)'] = [np.round(len(trace)/fs/3600,2)]
-    summary_report['detected central apnea events'] = [len(apnea_start)]
-    summary_report['detected central hypopnea events'] = [len(hypopnea_start)]
-    
-    full_report = pd.concat([report_events,summary_report],axis=1)
-    if save:
-        full_report.to_csv('report_central_resp_events.csv', index=False)
-
-    return full_report
     
 # replace all zeros by nan's
-def plot_central_events(trace, centr_detected_final, centr_hypo_final, savepath = 'figure_central_resp_events'):
-
-    central_events = np.zeros(centr_detected_final.shape)
-    central_events[centr_hypo_final.astype('bool')] = 2
-    central_events[centr_detected_final.astype('bool')] = 1
-    central_events.astype('float')
-    central_events[central_events==0] = float('nan')
-
-    assert(central_events.shape[0] == trace.shape[0])
-
-
-    # use seg_start_pos to convert to the nonoverlapping signal
-    # y = ytrue                               # shape = (N, 4100)
-    # yp = apnea_prediction                   # shape = (N, 4100)
-    # yp_smooth = apnea_prediction_smooth     # shape = (N, 4100)
-
-    # define the ids each row
-    nrow = 10
-    row_ids = np.array_split(np.arange(len(trace)), nrow)
-    row_ids.reverse()
-
-    fig = plt.figure(figsize=(12,8))
-    ax = fig.add_subplot(111)
-    row_height = 7
-    label_color = [None, 'g', 'c']
-
-    # here, we get clip-normalized signal. we should not need to plot >3 STD values:
-    trace[np.abs(trace > 3)] = np.nan
-
-    for ri in range(nrow):
-        # plot signal
-        ax.plot(trace[row_ids[ri]]+ri*row_height, c='k', lw=0.2)
-
-
-        y2 = central_events         
-
-        yi=0
-
-        # run over each plot row
-        for ri in range(nrow):
-            # plot tech annonation
-    #         ax.axhline(ri*row_height-3*(2**yi), c=[0.5,0.5,0.5], ls='--', lw=0.2)  # gridline
-            loc = 0
-
-            # group all labels and plot them
-            for i, j in groupby(y2[row_ids[ri]]):
-                len_j = len(list(j))
-                if not np.isnan(i) and label_color[int(i)] is not None:
-                    # i is the value of the label
-                    # list(j) is the list of labels with same value
-                    ax.plot([loc, loc+len_j], [ri*row_height-3*(2**yi)]*2, c=label_color[int(i)], lw=1)
-                loc += len_j
-
-    # plot layout setup
-    ax.set_xlim([0, max([len(x) for x in row_ids])])
-    ax.axis('off')
-    plt.tight_layout()
-    # plt.title(test_info[si])
-    # save the figure
-    plt.savefig(savepath + '.pdf')
-    plt.savefig(savepath + '.png')
-
 def compute_similarity(up, lo, fs):
     env_diff = up-lo
     similarity_array = np.zeros(env_diff.shape)
@@ -656,42 +530,6 @@ def compute_similarity(up, lo, fs):
 
     return similarity_array
     
-def post_processing_detections(apneas, hypopneas, similarity_array, fs, sim_thres=0.5):
-    # if apnea in hypopnea, keep only apnea.
-    hypo_on = np.where(np.diff(hypopneas)==1)[0]
-    hypo_off = np.where(np.diff(hypopneas)==-1)[0]
-    for [hypo_on_tmp, hypo_off_tmp] in list(zip(hypo_on, hypo_off)):
-        if any(apneas[hypo_on_tmp:hypo_off_tmp]==1):
-            hypopneas[hypo_on_tmp:hypo_off_tmp+1] = 0
-
-    # remove detections with similarity less than `sim_thres`
-    apneas[similarity_array<sim_thres] = 0
-    hypopneas[similarity_array<sim_thres] = 0
-    
-    # need to last more than 9 seconds:
-    hypo_on = np.where(np.diff(hypopneas)==1)[0]
-    hypo_off = np.where(np.diff(hypopneas)==-1)[0]
-    diff=[]
-    for [hypo_on_tmp, hypo_off_tmp] in list(zip(hypo_on, hypo_off)):
-        if hypo_off_tmp - hypo_on_tmp < 9*fs:
-            hypopneas[hypo_on_tmp:hypo_off_tmp+1] = 0
-    
-    # if less than 5 seconds gap between two detections, connect them
-    hypo_on = np.where(np.diff(hypopneas)==1)[0]
-    hypo_off = np.where(np.diff(hypopneas)==-1)[0]
-    apnea_on = np.where(np.diff(apneas)==1)[0]
-    apnea_off = np.where(np.diff(apneas)==-1)[0]
-        
-    for [hypo_on_tmp, hypo_off_previous] in list(zip(hypo_on[1:], hypo_off[:-1])):
-        if hypo_on_tmp - hypo_off_previous < 5*fs:
-            hypopneas[hypo_off_previous:hypo_on_tmp+1] = 1
-
-    for [apnea_on_tmp, apnea_off_previous] in list(zip(apnea_on[1:], apnea_off[:-1])):
-        if apnea_on_tmp - apnea_off_previous < 5*fs:
-            apneas[apnea_off_previous:apnea_on_tmp+1] = 1
-
-    return apneas, hypopneas
-
 
 ### T METHOD ###
 def do_T_method(data, hdr, channels):

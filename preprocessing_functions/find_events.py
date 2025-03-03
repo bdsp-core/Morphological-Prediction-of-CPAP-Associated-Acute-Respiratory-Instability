@@ -96,3 +96,14 @@ def search_for_merged_labels(signal):
 			locs.append((diff_drops.index[i-1], diff_drops.index[i], diff_drops.index[i+1]))
 	return locs
 
+def window_correction(array, window_size):
+	half_window = int(window_size//2)
+	events = find_events(array)
+	corr_array = np.array(array)
+	
+	# run over all events in array
+	for st, end in events:
+		label = array[st]
+		corr_array[st-half_window : end+half_window] = label
+
+	return corr_array.astype(int) 

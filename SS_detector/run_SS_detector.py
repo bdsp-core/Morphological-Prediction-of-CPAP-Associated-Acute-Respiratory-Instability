@@ -5,6 +5,7 @@ from itertools import groupby
 from scipy.signal import savgol_filter, convolve
 
 from .Algorithm_functions import *
+from ..preprocessing_functions.find_events import find_events, window_correction
 
 
 # Analysis functions
