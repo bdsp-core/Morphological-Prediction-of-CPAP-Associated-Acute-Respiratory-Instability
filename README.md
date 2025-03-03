@@ -70,4 +70,8 @@ Contributions are welcome. Please fork the repository and submit a pull request 
 ## Contact
 
 For questions, suggestions, or licensing inquiries, please contact:
-- **R.J. Thomas**, **T. Nassi**.
+- **T. Nassi**
+- **E. Oppersma**
+- **M. B. Westover**
+- **R.J. Thomas**
+
